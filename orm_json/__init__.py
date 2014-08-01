@@ -9,10 +9,10 @@ import json
 
 
 class Converter(object):
-  def __init__(self):
-    self.type_converters = {
-        datetime.date: datetime.date.isoformat,
-        datetime.datetime: datetime.datetime.isoformat}
+  def __init__(self, type_converters=None):
+    self.type_converters = {}
+    if type_converters is not None:
+      self.type_converters.update(type_converters)
 
   def __call__(self, record):
     """Returns a dictionary of the mapped ORM attributes.
@@ -31,7 +31,9 @@ class Converter(object):
       result[attr] = value
     return result
 
-DEFAULT_CONVERTER = Converter()
+  def add_type_converter(self, type_, converter):
+    """Adds or replaces an existing converter for the given type."""
+    self.type_converters[type_] = converter
 
 
 def add_json_converter(declarative_base, pyramid=False, converter=None):
@@ -43,3 +45,17 @@ def add_json_converter(declarative_base, pyramid=False, converter=None):
   if pyramid:
     declarative_base.__json__ = lambda self, _request: self.to_dict()
   return declarative_base
+
+
+def add_type_converter(type_, converter):
+  """Adds or replaces a converter to the default converter."""
+  DEFAULT_CONVERTER.add_type_converter(type_, converter)
+
+
+def default_converter():
+  """Returs a default JSON-preparer class."""
+  return Converter(type_converters={
+      datetime.date: datetime.date.isoformat,
+      datetime.datetime: datetime.datetime.isoformat})
+
+DEFAULT_CONVERTER = Converter()
