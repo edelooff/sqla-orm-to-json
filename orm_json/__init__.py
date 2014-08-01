@@ -31,6 +31,11 @@ class Converter(object):
       result[attr] = value
     return result
 
+  def add_type_converter(self, type_, converter):
+    """Adds or replaces an existing converter for the given type."""
+    self.type_converters[type_] = converter
+
+
 DEFAULT_CONVERTER = Converter()
 
 
