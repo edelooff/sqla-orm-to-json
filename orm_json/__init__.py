@@ -47,6 +47,11 @@ def add_json_converter(declarative_base, pyramid=False, converter=None):
   return declarative_base
 
 
+def add_type_converter(type_, converter):
+  """Adds or replaces a converter to the default converter."""
+  DEFAULT_CONVERTER.add_type_converter(type_, converter)
+
+
 def default_converter():
   """Returs a default JSON-preparer class."""
   return Converter(type_converters={
