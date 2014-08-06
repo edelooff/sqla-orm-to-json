@@ -26,14 +26,21 @@ class Converter(object):
     for attr in vars(record):
       if attr.startswith('_sa_'):
         continue  # Do not include SQLAlchemy internal attributes
-      value = getattr(record, attr)
-      converter = self.type_converters.get(type(value))
-      if converter is not None:
-        value = converter(value)
-      elif not isinstance(value, JSON_SAFE_TYPES):
-        value = str(value)
-      result[attr] = value
+      result[attr] = self.convert_value(getattr(record, attr))
     return result
+
+  def convert_value(self, value):
+    """Converts and returns the value using the appropriate type converter.
+
+    If no suitable type converter is found and the value is not of a known safe
+    type, a default conversion to string is performed.
+    """
+    val_type = type(value)
+    if val_type in self.type_converters:
+      return self.type_converters[val_type](value)
+    if not isinstance(value, JSON_SAFE_TYPES):
+      return str(value)
+    return value
 
   def add_type_converter(self, type_, converter):
     """Adds or replaces an existing converter for the given type."""
