@@ -7,6 +7,8 @@ the SQLAlchemy declarative baseclass for automatich record to dict conversion.
 import datetime
 import json
 
+JSON_SAFE_TYPES = set([type(None), list, dict, int, float, basestring])
+
 
 class Converter(object):
   def __init__(self, type_converters=None):
@@ -28,6 +30,8 @@ class Converter(object):
       converter = self.type_converters.get(type(value))
       if converter is not None:
         value = converter(value)
+      elif not isinstance(value, JSON_SAFE_TYPES):
+        value = str(value)
       result[attr] = value
     return result
 
