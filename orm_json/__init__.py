@@ -72,7 +72,7 @@ def default_converter():
       datetime.date: datetime.date.isoformat,
       datetime.datetime: datetime.datetime.isoformat})
 
-DEFAULT_CONVERTER = Converter()
+DEFAULT_CONVERTER = default_converter()
 
 
 def to_camelcase(varname):
