@@ -6,16 +6,18 @@ the SQLAlchemy declarative baseclass for automatich record to dict conversion.
 
 import datetime
 import json
+import re
 
 JSON_SAFE_TYPES = set([type(None), list, dict, int, float, basestring])
 
 
 class Converter(object):
-  def __init__(self, str_fallback=True, type_converters=None):
-    self.str_fallback = str_fallback
+  def __init__(self, **settings):
+    self.convert_key = settings.get('key_converter', to_camelcase)
+    self.str_fallback = settings.get('str_fallback', True)
     self.type_converters = {}
-    if type_converters is not None:
-      self.type_converters.update(type_converters)
+    if 'type_converters' in settings:
+      self.type_converters.update(settings['type_converters'])
 
   def __call__(self, record):
     """Returns a dictionary of the mapped ORM attributes.
@@ -27,7 +29,7 @@ class Converter(object):
     for attr in vars(record):
       if attr.startswith('_sa_'):
         continue  # Do not include SQLAlchemy internal attributes
-      result[attr] = self.convert_value(getattr(record, attr))
+      result[self.convert_key(attr)] = self.convert_value(getattr(record, attr))
     return result
 
   def convert_value(self, value):
@@ -71,3 +73,15 @@ def default_converter():
       datetime.datetime: datetime.datetime.isoformat})
 
 DEFAULT_CONVERTER = Converter()
+
+
+def to_camelcase(varname):
+  """Converts a name from lower_with_under naming to camelCase.
+
+  The assumption is made that the given variable name is in all lowercase and
+  uses single underscores to separate words.
+  """
+  def _convert(match):
+    return match.group(1).upper()
+
+  return re.sub('_([a-z])', _convert, varname)
