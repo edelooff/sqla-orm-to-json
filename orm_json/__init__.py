@@ -11,7 +11,8 @@ JSON_SAFE_TYPES = set([type(None), list, dict, int, float, basestring])
 
 
 class Converter(object):
-  def __init__(self, type_converters=None):
+  def __init__(self, str_fallback=True, type_converters=None):
+    self.str_fallback = str_fallback
     self.type_converters = {}
     if type_converters is not None:
       self.type_converters.update(type_converters)
@@ -38,7 +39,7 @@ class Converter(object):
     val_type = type(value)
     if val_type in self.type_converters:
       return self.type_converters[val_type](value)
-    if not isinstance(value, JSON_SAFE_TYPES):
+    if self.str_fallback and not isinstance(value, JSON_SAFE_TYPES):
       return str(value)
     return value
 
